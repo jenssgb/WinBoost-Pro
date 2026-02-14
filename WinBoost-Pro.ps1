@@ -417,19 +417,44 @@ function Close-ProcessesByCategory {
         }
     }
 
-    if ($processesToKill.Count -gt 0) {
-        foreach ($procName in $processesToKill) {
-            $procs = Get-Process -Name $procName -ErrorAction SilentlyContinue
-            foreach ($proc in $procs) {
-                try {
-                    Stop-Process -Id $proc.Id -Force -ErrorAction Stop
-                    Write-ColorText "  [OK] $procName terminated" -Color Green
-                } catch {
-                    # Ignore
-                }
-            }
+    if ($processesToKill.Count -eq 0) { return }
+
+    # Find running processes matching selected categories
+    $found = @()
+    foreach ($procName in $processesToKill) {
+        $procs = Get-Process -Name $procName -ErrorAction SilentlyContinue
+        if ($procs) { $found += $procs }
+    }
+
+    if ($found.Count -eq 0) {
+        Write-ColorText "[OK] No running processes found in selected categories." -Color Green
+        return
+    }
+
+    Write-ColorText "Found $($found.Count) process(es) to close:" -Color Yellow
+    $found | ForEach-Object {
+        Write-ColorText "  - $($_.ProcessName) (PID $($_.Id))" -Color White
+    }
+    Write-Host ""
+
+    if (-not (Get-UserConfirmation "Close these processes?")) {
+        Write-ColorText "[X] Cancelled." -Color Red
+        return
+    }
+
+    $closed = 0
+    foreach ($proc in $found) {
+        try {
+            Stop-Process -Id $proc.Id -Force -ErrorAction Stop
+            Write-ColorText "  [OK] $($proc.ProcessName) terminated" -Color Green
+            $closed++
+        } catch {
+            Write-ColorText "  [X] $($proc.ProcessName) could not be terminated" -Color Red
         }
     }
+
+    Write-Host ""
+    Write-ColorText "Result: $closed process(es) closed." -Color Cyan
 }
 
 function Show-SystrayManager {
