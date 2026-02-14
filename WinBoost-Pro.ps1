@@ -1323,10 +1323,10 @@ function Start-Uninstall {
 
             if ($uninstall -match '\.exe') {
                 $exePath = $uninstall -replace '\s+/.*$', ''
-                $args = $uninstall -replace '^.*?\.exe\s*', ''
+                $uninstallArgs = $uninstall -replace '^.*?\.exe\s*', ''
 
                 if (Test-Path $exePath) {
-                    Start-Process $exePath -ArgumentList $args -Wait
+                    Start-Process $exePath -ArgumentList $uninstallArgs -Wait
                 } else {
                     Start-Process cmd -ArgumentList "/c `"$uninstall`"" -Wait
                 }
