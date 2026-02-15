@@ -90,7 +90,7 @@ function Write-Banner {
 |                                                                     |
 |          ### PRO v1.0 - PERFORMANCE & CLEANUP TOOLKIT ###           |
 |                                                                     |
-|   Close Apps | Cleanup | Uninstall | Optimize | Analyze             |
+|   Close | Processes | Cleanup | Uninstall | Optimize              |
 +=====================================================================+
 "@
     Write-ColorText $banner -Color Cyan
@@ -1779,6 +1779,79 @@ function Invoke-Pause {
     Read-Host | Out-Null
 }
 
+function Show-CloseAppsMenu {
+    while ($true) {
+        Write-SectionHeader "CLOSE APPS"
+
+        Write-ColorText "  [1] " -Color Cyan -NoNewLine
+        Write-ColorText "Close foreground apps" -Color White
+        Write-ColorText "  [2] " -Color Cyan -NoNewLine
+        Write-ColorText "TURBO: Close all (EXCEPT Teams)" -Color Yellow
+        Write-ColorText "  [3] " -Color Cyan -NoNewLine
+        Write-ColorText "TURBO: Close all (INCLUDING Teams)" -Color Red
+        Write-ColorText "  [4] " -Color Cyan -NoNewLine
+        Write-ColorText "Close by category (Browser, Office, Dev, ...)" -Color White
+        Write-ColorText "  [5] " -Color Cyan -NoNewLine
+        Write-ColorText "Auto-Cleanup (all categories + optional systray)" -Color White
+
+        Write-Host ""
+        Write-ColorText "  [Q] " -Color Red -NoNewLine
+        Write-ColorText "Back to main menu" -Color White
+
+        Write-Host ""
+        Write-ColorText "Choice: " -Color Yellow -NoNewLine
+        $choice = Read-Host
+
+        switch ($choice.ToUpper()) {
+            '1' { Close-ForegroundApps; Invoke-Pause }
+            '2' { Close-AllApps; Invoke-Pause }
+            '3' { Close-AllApps -IncludeTeams -IncludeSystray; Invoke-Pause }
+            '4' { Close-ProcessesByCategory; Invoke-Pause }
+            '5' { Start-AutoCleanup; Invoke-Pause }
+            'Q' { return }
+            default {
+                Write-ColorText "Invalid choice!" -Color Red
+                Start-Sleep -Seconds 1
+            }
+        }
+    }
+}
+
+function Show-ProcessManagerMenu {
+    while ($true) {
+        Write-SectionHeader "PROCESS MANAGER"
+
+        Write-ColorText "  [1] " -Color Cyan -NoNewLine
+        Write-ColorText "Resource overview (CPU/RAM top 15)" -Color White
+        Write-ColorText "  [2] " -Color Cyan -NoNewLine
+        Write-ColorText "Find performance issues (anomaly detection + kill)" -Color White
+        Write-ColorText "  [3] " -Color Cyan -NoNewLine
+        Write-ColorText "Interactive process killer" -Color White
+        Write-ColorText "  [4] " -Color Cyan -NoNewLine
+        Write-ColorText "Systray / background app manager" -Color White
+
+        Write-Host ""
+        Write-ColorText "  [Q] " -Color Red -NoNewLine
+        Write-ColorText "Back to main menu" -Color White
+
+        Write-Host ""
+        Write-ColorText "Choice: " -Color Yellow -NoNewLine
+        $choice = Read-Host
+
+        switch ($choice.ToUpper()) {
+            '1' { Get-ResourceHungryProcesses; Invoke-Pause }
+            '2' { Find-SlowProcesses; Invoke-Pause }
+            '3' { Show-ProcessManager; Invoke-Pause }
+            '4' { Show-SystrayManager; Invoke-Pause }
+            'Q' { return }
+            default {
+                Write-ColorText "Invalid choice!" -Color Red
+                Start-Sleep -Seconds 1
+            }
+        }
+    }
+}
+
 function Show-MainMenu {
     while ($true) {
         Write-Banner
@@ -1788,45 +1861,18 @@ function Show-MainMenu {
         Write-ColorText "====================================================================" -Color DarkCyan
         Write-Host ""
 
-        Write-ColorText "  === CLOSE APPS ===" -Color DarkGray
         Write-ColorText "  [1]  " -Color Cyan -NoNewLine
-        Write-ColorText "Close foreground apps" -Color White
+        Write-ColorText "Close Apps" -Color White
         Write-ColorText "  [2]  " -Color Cyan -NoNewLine
-        Write-ColorText "TURBO: Close all (EXCEPT Teams)" -Color Yellow
+        Write-ColorText "Process Manager" -Color White
         Write-ColorText "  [3]  " -Color Cyan -NoNewLine
-        Write-ColorText "TURBO: Close all (INCLUDING Teams)" -Color Red
+        Write-ColorText "Disk Cleanup" -Color White
         Write-ColorText "  [4]  " -Color Cyan -NoNewLine
-        Write-ColorText "Manage systray/background apps" -Color White
-
-        Write-Host ""
-        Write-ColorText "  === ANALYZE & PROCESSES ===" -Color DarkGray
-        Write-ColorText "  [5]  " -Color Cyan -NoNewLine
-        Write-ColorText "Resource analysis (CPU/RAM)" -Color White
-        Write-ColorText "  [6]  " -Color Cyan -NoNewLine
-        Write-ColorText "Find performance issues" -Color White
-        Write-ColorText "  [7]  " -Color Cyan -NoNewLine
-        Write-ColorText "Interactive process manager" -Color White
-        Write-ColorText "  [8]  " -Color Cyan -NoNewLine
-        Write-ColorText "Close by category" -Color White
-
-        Write-Host ""
-        Write-ColorText "  === SYSTEM MAINTENANCE ===" -Color DarkGray
-        Write-ColorText "  [9]  " -Color Cyan -NoNewLine
-        Write-ColorText "Free disk space (Cleanup)" -Color White
-        Write-ColorText "  [10] " -Color Cyan -NoNewLine
-        Write-ColorText "Uninstall programs" -Color White
-        Write-ColorText "  [11] " -Color Cyan -NoNewLine
-        Write-ColorText "Auto-Cleanup mode" -Color White
-
-        Write-Host ""
-        Write-ColorText "  === PERFORMANCE OPTIMIZATION ===" -Color DarkGray
-        Write-ColorText "  [12] " -Color Green -NoNewLine
+        Write-ColorText "Uninstall Programs" -Color White
+        Write-ColorText "  [5]  " -Color Green -NoNewLine
         Write-ColorText "System Optimization (Safe / Moderate / Advanced)" -Color Green
-
-        Write-Host ""
-        Write-ColorText "  === EXTRAS ===" -Color DarkGray
-        Write-ColorText "  [13] " -Color Cyan -NoNewLine
-        Write-ColorText "Create desktop shortcut" -Color White
+        Write-ColorText "  [6]  " -Color Cyan -NoNewLine
+        Write-ColorText "Create Desktop Shortcut" -Color White
 
         Write-Host ""
         Write-ColorText "  [Q]  " -Color Red -NoNewLine
@@ -1838,20 +1884,13 @@ function Show-MainMenu {
         $choice = Read-Host
 
         switch ($choice.ToUpper()) {
-            '1'  { Close-ForegroundApps; Invoke-Pause }
-            '2'  { Close-AllApps; Invoke-Pause }
-            '3'  { Close-AllApps -IncludeTeams -IncludeSystray; Invoke-Pause }
-            '4'  { Show-SystrayManager; Invoke-Pause }
-            '5'  { Get-ResourceHungryProcesses; Invoke-Pause }
-            '6'  { Find-SlowProcesses; Invoke-Pause }
-            '7'  { Show-ProcessManager; Invoke-Pause }
-            '8'  { Close-ProcessesByCategory; Invoke-Pause }
-            '9'  { Start-DiskCleanup; Invoke-Pause }
-            '10' { Show-UninstallManager; Invoke-Pause }
-            '11' { Start-AutoCleanup; Invoke-Pause }
-            '12' { Show-PerformanceOptimizer; Invoke-Pause }
-            '13' { Install-DesktopShortcut; Invoke-Pause }
-            'Q'  {
+            '1' { Show-CloseAppsMenu }
+            '2' { Show-ProcessManagerMenu }
+            '3' { Start-DiskCleanup; Invoke-Pause }
+            '4' { Show-UninstallManager; Invoke-Pause }
+            '5' { Show-PerformanceOptimizer; Invoke-Pause }
+            '6' { Install-DesktopShortcut; Invoke-Pause }
+            'Q' {
                 Write-ColorText "`nGoodbye!" -Color Cyan
                 return
             }
